@@ -1,8 +1,8 @@
 import { CellState } from '../enums/cell-state';
 import { Vector2 } from './vector2';
+import { IHashable } from '../interfaces/ihashable';
 
-export class CellViewModel {
-
+export class CellViewModel implements IHashable {
     /**Node state */
     state: CellState;
 
@@ -36,6 +36,10 @@ export class CellViewModel {
     constructor(location: Vector2, state: CellState = CellState.Empty) {
         this.state = state;
         this.location = location;
+    }
+
+    getHash(): string {
+        return this.location.getHash();
     }
 
     /**Sets the next state - simply increments to next state or first state if last */

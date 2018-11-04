@@ -4,6 +4,8 @@ import { CellViewModel } from '../view-models/cell-view-model';
 import { GridViewModel } from '../view-models/grid-view-model';
 import { CellState } from '../enums/cell-state';
 import { Vector2 } from '../view-models/vector2';
+import { PriorityQueue } from '../data-structures/priority-queue';
+import { HashMap } from '../data-structures/hash-map';
 
 /**A* implementation based on: https://www.redblobgames.com/pathfinding/a-star/introduction.html
  * Grid coordinates are in (x, y) format as follows:
@@ -46,14 +48,18 @@ export class AStarService {
     }
   }
 
-  /**Sets the starting node */
+  /**Sets the starting node unless it has already been set */
   setStartingNode(startingNode: CellViewModel): void {
-    this.startingNode = startingNode;
+    if (!this.startingNode) {
+      this.startingNode = startingNode;
+    }
   }
 
-  /**Sets the target node */
+  /**Sets the target node unless it has already been set */
   setTargetNode(targetNode: CellViewModel): void {
-    this.targetNode = targetNode;
+    if (!this.targetNode) {
+      this.targetNode = targetNode;
+    }
   }
 
   /**Resets the grid to its starting state */
@@ -75,54 +81,93 @@ export class AStarService {
       return;
     }
 
-    const frontier: CellViewModel[] = [];
-    const visited: CellViewModel[] = [];
+    // List of nodes which we can move to next, picking the node with lowest cost
+    const frontier = new PriorityQueue<CellViewModel>();
+
+    // Tracks which node we moved on to, from which (e.g.: A -> B, B -> C, C -> D, etc...)
+    const cameFrom = new HashMap<CellViewModel, CellViewModel>();
+
+    // Tracks the cost to get to a specific node from the start
+    const costSoFar = new HashMap<CellViewModel, number>();
+
+    frontier.enqueue(this.startingNode, 0);
+    cameFrom.add(this.startingNode, this.startingNode);
+    costSoFar.add(this.startingNode, 0);
 
     // Repeat the following
-    while (true) {
-      // Add the starting square (or node) to the open list.
-      frontier.push(this.startingNode);
-      visited.push(this.startingNode);
+    while (!frontier.empty) {
 
       // Open list node, with the lowest F
-      let currentNode = frontier[0];
+      const currentNode = frontier.dequeue();
 
-      // Look for the lowest F cost square on the open list. We refer to this as the current square.
-      frontier.forEach(currentOpenNode => {
-        if (currentOpenNode.f < currentNode.f) {
-          currentNode = currentOpenNode;
-        }
-      });
+      if (currentNode === this.targetNode) {
+        return;
+      }
 
-      // Push currentNode to closed list
-      visited.push(currentNode);
+      currentNode.setState(CellState.ConfirmedPath);
 
       const adjacentEightNodes = this.getAdjacentEightNodes(currentNode);
 
       // For each of the 8 squares adjacent to this current square
       adjacentEightNodes.forEach(adjacentNode => {
 
-        // If it is NOT walkable - ignore it
-        if (adjacentNode.state !== CellState.Empty) {
-          return;
-        }
+        // TODO: verify. Is additional cost always 1?
+        const movementCost = costSoFar.get(currentNode) + 1;
 
-        // If it IS in the closed list - ignore it
-        if (visited.find(closedNode => closedNode === adjacentNode)) {
-          return;
-        }
+        if (!costSoFar.get(adjacentNode) || movementCost < costSoFar.get(adjacentNode)) {
+          costSoFar.add(adjacentNode, movementCost);
 
-        // If it is NOT on the open list
-        if (!frontier.find(openNode => openNode === adjacentNode)) {
-          // Add it to the open list
-          frontier.push(adjacentNode);
+          const priority = movementCost + this.getHeuristic(adjacentNode, this.targetNode);
 
-          // Make the current square the parent of this square
-
-          // Record the F, G, and H costs of the square
+          frontier.enqueue(adjacentNode, priority);
+          cameFrom.add(adjacentNode, currentNode);
         }
       });
+
+      // Look for the lowest F cost square on the open list. We refer to this as the current square.
+      // frontier.forEach(currentOpenNode => {
+      //   if (currentOpenNode.f < currentNode.f) {
+      //     currentNode = currentOpenNode;
+      //   }
+      // });
+
+      // // Push currentNode to closed list
+      // visited.push(currentNode);
+
+      // const adjacentEightNodes = this.getAdjacentEightNodes(currentNode);
+
+      // // For each of the 8 squares adjacent to this current square
+      // adjacentEightNodes.forEach(adjacentNode => {
+
+      //   // If it is NOT walkable - ignore it
+      //   if (adjacentNode.state !== CellState.Empty) {
+      //     return;
+      //   }
+
+      //   // If it IS in the closed list - ignore it
+      //   if (visited.find(closedNode => closedNode === adjacentNode)) {
+      //     return;
+      //   }
+
+      //   // If it is NOT on the open list
+      //   if (!frontier.find(openNode => openNode === adjacentNode)) {
+      //     // Add it to the open list
+      //     frontier.push(adjacentNode);
+
+      //     // Make the current square the parent of this square
+
+      //     // Record the F, G, and H costs of the square
+      //   }
+      // });
     }
+  }
+
+  /**Gets the approximage distance between the two nodes as difference in X^2 plus difference in Y^2 added together */
+  getHeuristic(startNode: CellViewModel, targetNode: CellViewModel) {
+    const x = Math.abs(startNode.location.x - targetNode.location.x);
+    const y = Math.abs(startNode.location.y - targetNode.location.y);
+
+    return Math.pow(x, 2) + Math.pow(y, 2);
   }
 
   /**Gets adjacent 8 nodes
