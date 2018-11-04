@@ -16,4 +16,8 @@ export class ControlPanelComponent implements OnInit {
   findPath(): void {
     this.aStarService.findPath();
   }
+
+  reset(): void {
+    this.aStarService.reset();
+  }
 }

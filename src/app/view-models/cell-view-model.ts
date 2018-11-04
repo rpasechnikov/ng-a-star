@@ -5,6 +5,9 @@ export class CellViewModel {
     /**Node state */
     state: CellState;
 
+    /**Node colour - based on state */
+    colour: string;
+
     /**X-coordinate */
     x: number;
 
@@ -32,9 +35,62 @@ export class CellViewModel {
      */
     h: number;
 
-    constructor (x: number = 0, y: number = 0, state: CellState = CellState.Empty) {
+    constructor(x: number = 0, y: number = 0, state: CellState = CellState.Empty) {
         this.state = state;
         this.x = x;
         this.y = y;
+    }
+
+    /**Sets the next state - simply increments to next state or first state if last */
+    setNextState(): CellState {
+        this.setState(this.getNextState(this.state, true));
+        return this.state;
+    }
+
+    /**Update colour and VM cell state
+     * @param state to update to
+     */
+    setState(state: CellState): CellState {
+        this.state = state;
+
+        switch (state) {
+            case CellState.Empty:
+                this.colour = 'transparent';
+                break;
+            case CellState.Obstacle:
+                this.colour = 'grey';
+                break;
+            case CellState.PossiblePath:
+                this.colour = 'yellow';
+                break;
+            case CellState.ConfirmedPath:
+                this.colour = 'blue';
+                break;
+            case CellState.Start:
+                this.colour = 'green';
+                break;
+            case CellState.End:
+                this.colour = 'red';
+                break;
+        }
+
+        return this.state;
+    }
+
+    /**Gets next state - simply increments to next state or first state if last
+    * @param state old state to update
+    * @param onClick false by default, if true - will only allow Obstacle, Start and End states
+    */
+    private getNextState(state: CellState, onClick: boolean = false): CellState {
+        // Go to next state if possible, otherwise loop to first
+        do {
+            if (state < CellState.End) {
+                state++;
+            } else {
+                state = CellState.Empty;
+            }
+        } while (onClick && (state === CellState.PossiblePath || state === CellState.ConfirmedPath));
+
+        return state;
     }
 }

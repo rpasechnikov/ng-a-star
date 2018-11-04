@@ -63,6 +63,21 @@ export class AStarService {
     this.cellVms[obstacleNode.x][obstacleNode.y].state = CellState.Empty;
   }
 
+  /**Resets the grid to its starting state */
+  reset(): void {
+    for (let x = 0; x < this.gridVm.size; x++) {
+      for (let y = 0; y < this.gridVm.size; y++) {
+        this.cellVms[x][y].setState(CellState.Empty);
+      }
+    }
+
+    this.openList = [];
+    this.closedList = [];
+
+    this.startingNode = null;
+    this.targetNode = null;
+  }
+
   /**Finds the shortest path between the starting node and target node using the A* algorithm */
   findPath(): void {
     if (!this.startingNode || !this.targetNode) {
@@ -72,5 +87,13 @@ export class AStarService {
 
     this.openList = [];
     this.closedList = [];
+
+    let currentNode = this.startingNode;
+
+    while (true) {
+      this.openList.push(currentNode);
+
+
+    }
   }
 }
