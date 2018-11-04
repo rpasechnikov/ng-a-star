@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { GridViewModel } from './view-models/grid-view-model';
 
 @Component({
   selector: 'app-root',
@@ -6,5 +7,5 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'a-star';
+  gridVm = new GridViewModel(20);
 }

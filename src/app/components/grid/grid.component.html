@@ -1,0 +1,6 @@
+<div class="row" *ngFor="let cellRowVm of cellVms; let x = index;">
+  <app-cell 
+    *ngFor="let cellVm of cellRowVm; let y = index;" 
+    [cellViewModel]="cellVm">
+  </app-cell>
+</div>
