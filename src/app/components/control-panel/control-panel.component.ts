@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { AStarService } from 'src/app/services/a-star.service';
 
 @Component({
   selector: 'app-control-panel',
@@ -7,9 +8,12 @@ import { Component, OnInit } from '@angular/core';
 })
 export class ControlPanelComponent implements OnInit {
 
-  constructor() { }
+  constructor(private aStarService: AStarService) { }
 
   ngOnInit() {
   }
 
+  findPath(): void {
+    this.aStarService.findPath();
+  }
 }

@@ -1,7 +1,9 @@
+$grey: rgb(172, 178, 197);
+
 .cell {
     width: 20px;
     height: 20px;
-    border: 1px solid rgb(70, 70, 70);
+    border: 1px solid $grey;
     float: left;
 
     &.transparent {
@@ -9,22 +11,22 @@
     }
 
     &.grey {
-        background: rgb(92, 92, 92);
+        background: $grey;
     }
 
     &.yellow {
-        background: lightgoldenrodyellow;
+        background: rgb(243, 243, 128);
     }
 
     &.blue {
-        background: lightskyblue;
+        background: rgb(112, 175, 214);
     }
 
     &.green {
-        background: green;
+        background: rgb(93, 160, 93);
     }
 
     &.red {
-        background: red;
+        background: rgb(221, 96, 96);
     }
 }

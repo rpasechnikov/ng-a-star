@@ -17,15 +17,42 @@ export class CellComponent implements OnInit {
   ngOnInit() {
   }
 
-  updateState(state: CellState): void {
+  onClick($event: MouseEvent): void {
+    this.setState(this.getNextState(this.cellViewModel.state, true));
+  }
 
-    // Go to next state if possible, otherwise loop toe first
-    if (state < CellState.End) {
-      state++;
-    } else {
-      state = CellState.Empty;
+  /**Allows drawing of obstacles or clearing them on mouse down. Simply flips the ste */
+  mouseOver($event: MouseEvent): void {
+    if ($event.buttons === 1) {
+      if (this.cellViewModel.state === CellState.Empty) {
+        this.setState(CellState.Obstacle);
+      } else {
+        this.setState(CellState.Empty);
+      }
     }
+  }
 
+  /**Gets next state - simply increments to next state or first state if last
+   * @param state old state to update
+   * @param onClick false by default, if true - will only allow Obstacle, Start and End states
+   */
+  private getNextState(state: CellState, onClick: boolean = false): CellState {
+      // Go to next state if possible, otherwise loop to first
+      do {
+        if (state < CellState.End) {
+          state++;
+        } else {
+          state = CellState.Empty;
+        }
+      } while (onClick && (state === CellState.PossiblePath || state === CellState.ConfirmedPath));
+
+      return state;
+  }
+
+  /**Update colour and VM cell state
+   * @param state to update to
+   */
+  private setState(state: CellState): void {
     this.cellViewModel.state = state;
 
     switch (state) {
@@ -48,9 +75,5 @@ export class CellComponent implements OnInit {
         this.colour = 'red';
         break;
     }
-  }
-
-  onClick($event): void {
-    this.updateState(this.cellViewModel.state);
   }
 }
