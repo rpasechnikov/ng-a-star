@@ -1,4 +1,5 @@
 import { CellState } from '../enums/cell-state';
+import { Vector2 } from './vector2';
 
 export class CellViewModel {
 
@@ -8,11 +9,8 @@ export class CellViewModel {
     /**Node colour - based on state */
     colour: string;
 
-    /**X-coordinate */
-    x: number;
-
-    /**Y-coordinate */
-    y: number;
+    /**Node location within parent grid */
+    location: Vector2;
 
     /**Total cost of node (g + h) */
     f: number;
@@ -35,10 +33,9 @@ export class CellViewModel {
      */
     h: number;
 
-    constructor(x: number = 0, y: number = 0, state: CellState = CellState.Empty) {
+    constructor(location: Vector2, state: CellState = CellState.Empty) {
         this.state = state;
-        this.x = x;
-        this.y = y;
+        this.location = location;
     }
 
     /**Sets the next state - simply increments to next state or first state if last */

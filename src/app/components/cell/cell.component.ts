@@ -15,16 +15,26 @@ export class CellComponent implements OnInit {
   /**Left mouse button number in MouseEvent.buttons property */
   private MOUSE_BUTTON_LEFT = 1;
 
-  constructor() { }
+  constructor(private aStarService: AStarService) { }
 
   ngOnInit() {
   }
 
-  onClick($event: MouseEvent): void {
+  /**Toggles clickable cell state (empty, obstacle, start or target) */
+  onClick(): void {
     this.cellViewModel.setNextState();
+
+    if (this.cellViewModel.state === CellState.Start) {
+      this.aStarService.setStartingNode(this.cellViewModel);
+    } else if (this.cellViewModel.state === CellState.End) {
+      this.aStarService.setTargetNode(this.cellViewModel);
+    }
   }
 
-  /**Allows drawing of obstacles or clearing them on mouse down. Simply flips the ste */
+  /**Allows drawing of obstacles or clearing them on mouse down. Simply flips the state as follows:
+   * empty -> obstacle
+   * non-empty -> empty
+   */
   mouseOver($event: MouseEvent): void {
     if ($event.buttons === this.MOUSE_BUTTON_LEFT) {
       if (this.cellViewModel.state === CellState.Empty) {

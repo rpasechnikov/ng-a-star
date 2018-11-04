@@ -1,3 +1,4 @@
+/**Represents a grid of cells/nodes */
 export class GridViewModel {
     size: number;
 
