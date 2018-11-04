@@ -1,6 +1,7 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { CellState } from 'src/app/enums/cell-state';
 import { CellViewModel } from 'src/app/view-models/cell-view-model';
+import { AStarService } from 'src/app/services/a-star.service';
 
 @Component({
   selector: 'app-cell',
@@ -12,7 +13,7 @@ export class CellComponent implements OnInit {
   @Input() cellViewModel: CellViewModel;
   colour: string;
 
-  constructor() { }
+  constructor(private aStarService: AStarService) { }
 
   ngOnInit() {
   }
@@ -58,9 +59,11 @@ export class CellComponent implements OnInit {
     switch (state) {
       case CellState.Empty:
         this.colour = 'transparent';
+        this.aStarService.clearNode(this.cellViewModel);
         break;
       case CellState.Obstacle:
         this.colour = 'grey';
+        this.aStarService.setObstacleNode(this.cellViewModel);
         break;
       case CellState.PossiblePath:
         this.colour = 'yellow';
@@ -70,9 +73,11 @@ export class CellComponent implements OnInit {
         break;
       case CellState.Start:
         this.colour = 'green';
+        this.aStarService.setStartingNode(this.cellViewModel);
         break;
       case CellState.End:
         this.colour = 'red';
+        this.aStarService.setTargetNode(this.cellViewModel);
         break;
     }
   }
