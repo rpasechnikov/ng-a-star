@@ -33,9 +33,14 @@ export class PriorityQueue<T> {
         this.elements = [].concat(leftSide, [queueEntry], rightSide);
     }
 
-    /**Returns the first element in the queue, based on its priority (highest priority first) */
+    /**Returns the first element in the queue - element with the highest priority */
     dequeue(): T {
         return this.elements.shift().element;
+    }
+
+    /**Returns the last element in the queue - elements with lowest priority */
+    pop(): T {
+        return this.elements.pop().element;
     }
 
     clear(): void {

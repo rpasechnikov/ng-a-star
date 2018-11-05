@@ -98,20 +98,28 @@ export class AStarService {
     while (!frontier.empty) {
 
       // Open list node, with the lowest F
-      const currentNode = frontier.dequeue();
+      const currentNode = frontier.pop();
+      console.log(`Popped: ${currentNode.location.toString()}`);
 
       if (currentNode === this.targetNode) {
         return;
       }
 
-      currentNode.setState(CellState.ConfirmedPath);
+      if (currentNode.state !== CellState.Start) {
+        currentNode.setState(CellState.ConfirmedPath);
+      }
 
       const adjacentEightNodes = this.getAdjacentEightNodes(currentNode);
 
       // For each of the 8 squares adjacent to this current square
       adjacentEightNodes.forEach(adjacentNode => {
 
-        // TODO: verify. Is additional cost always 1?
+        // Cannot walk through walls
+        if (adjacentNode.state === CellState.Obstacle) {
+          return;
+        }
+
+        // TODO: can add movement cost based on environment (e.g. forest, mountaints, etc)
         const movementCost = costSoFar.get(currentNode) + 1;
 
         if (!costSoFar.get(adjacentNode) || movementCost < costSoFar.get(adjacentNode)) {
@@ -123,42 +131,6 @@ export class AStarService {
           cameFrom.add(adjacentNode, currentNode);
         }
       });
-
-      // Look for the lowest F cost square on the open list. We refer to this as the current square.
-      // frontier.forEach(currentOpenNode => {
-      //   if (currentOpenNode.f < currentNode.f) {
-      //     currentNode = currentOpenNode;
-      //   }
-      // });
-
-      // // Push currentNode to closed list
-      // visited.push(currentNode);
-
-      // const adjacentEightNodes = this.getAdjacentEightNodes(currentNode);
-
-      // // For each of the 8 squares adjacent to this current square
-      // adjacentEightNodes.forEach(adjacentNode => {
-
-      //   // If it is NOT walkable - ignore it
-      //   if (adjacentNode.state !== CellState.Empty) {
-      //     return;
-      //   }
-
-      //   // If it IS in the closed list - ignore it
-      //   if (visited.find(closedNode => closedNode === adjacentNode)) {
-      //     return;
-      //   }
-
-      //   // If it is NOT on the open list
-      //   if (!frontier.find(openNode => openNode === adjacentNode)) {
-      //     // Add it to the open list
-      //     frontier.push(adjacentNode);
-
-      //     // Make the current square the parent of this square
-
-      //     // Record the F, G, and H costs of the square
-      //   }
-      // });
     }
   }
 
