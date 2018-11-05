@@ -24,7 +24,9 @@ export class AStarService {
   private startingNode: CellViewModel;
   private targetNode: CellViewModel;
 
-  pathResult: Observable<CellViewModel>;
+  private allowDiagonalMovement = true;
+
+  private visitedNodes: CellViewModel[] = [];
 
   constructor() { }
 
@@ -74,8 +76,25 @@ export class AStarService {
     this.targetNode = null;
   }
 
+  clear(): void {
+    // let's clean up old results first
+    this.visitedNodes.forEach(node => {
+      if (node.state === CellState.ConfirmedPath) {
+        node.setState(CellState.Empty);
+      }
+    });
+
+    this.visitedNodes = [];
+  }
+
+  setAllowDiagonalMovement(value: boolean): void {
+    this.allowDiagonalMovement = value;
+  }
+
   /**Finds the shortest path between the starting node and target node using the A* algorithm */
   findPath(): void {
+    this.clear();
+
     if (!this.startingNode || !this.targetNode) {
       console.log('Unable to find the shortest path unless both starting and target nodes have been defined');
       return;
@@ -93,6 +112,7 @@ export class AStarService {
     frontier.enqueue(this.startingNode, 0);
     cameFrom.add(this.startingNode, this.startingNode);
     costSoFar.add(this.startingNode, 0);
+    this.visitedNodes.push(this.startingNode);
 
     // Repeat the following
     while (!frontier.empty) {
@@ -109,7 +129,7 @@ export class AStarService {
         currentNode.setState(CellState.ConfirmedPath);
       }
 
-      const adjacentEightNodes = this.getAdjacentEightNodes(currentNode);
+      const adjacentEightNodes = this.getAdjacentEightNodes(currentNode, this.allowDiagonalMovement);
 
       // For each of the 8 squares adjacent to this current square
       adjacentEightNodes.forEach(adjacentNode => {
@@ -128,6 +148,7 @@ export class AStarService {
           const priority = movementCost + this.getHeuristic(adjacentNode, this.targetNode);
 
           frontier.enqueue(adjacentNode, priority);
+          this.visitedNodes.push(adjacentNode);
           cameFrom.add(adjacentNode, currentNode);
         }
       });
@@ -135,7 +156,7 @@ export class AStarService {
   }
 
   /**Gets the approximage distance between the two nodes as difference in X^2 plus difference in Y^2 added together */
-  getHeuristic(startNode: CellViewModel, targetNode: CellViewModel) {
+  private getHeuristic(startNode: CellViewModel, targetNode: CellViewModel) {
     const x = Math.abs(startNode.location.x - targetNode.location.x);
     const y = Math.abs(startNode.location.y - targetNode.location.y);
 
@@ -149,7 +170,7 @@ export class AStarService {
    * Number of adjacent nodes can be as little as 3 and as large as 8,
    * depending on current node location
    */
-  getAdjacentEightNodes(currentNode: CellViewModel): CellViewModel[] {
+  private getAdjacentEightNodes(currentNode: CellViewModel, allowDiagonalMovement: boolean): CellViewModel[] {
     const currentX = currentNode.location.x;
     const currentY = currentNode.location.y;
 
@@ -158,109 +179,178 @@ export class AStarService {
       // X 0
       // 0 0
       if (currentNode.location.y === 0) {
-        return this.getNodesByLocations([
-          new Vector2(currentX, currentY),
-          new Vector2(currentX + 1, currentY),
-          new Vector2(currentX, currentY + 1),
-          new Vector2(currentX + 1, currentY + 1)]);
+        if (allowDiagonalMovement) {
+          return this.getNodesByLocations([
+            new Vector2(currentX, currentY),
+            new Vector2(currentX + 1, currentY),
+            new Vector2(currentX, currentY + 1),
+            new Vector2(currentX + 1, currentY + 1)]);
+        } else {
+          return this.getNodesByLocations([
+            new Vector2(currentX, currentY),
+            new Vector2(currentX + 1, currentY),
+            new Vector2(currentX, currentY + 1)]);
+        }
       } else if (currentNode.location.y === this.gridViewModel.size - 1) {
         // Left-most and bottom-most node
         // 0 0
         // x 0
-        return this.getNodesByLocations([
-          new Vector2(currentX, currentY - 1),
-          new Vector2(currentX + 1, currentY - 1),
-          new Vector2(currentX, currentY),
-          new Vector2(currentX + 1, currentY)]);
+        if (allowDiagonalMovement) {
+          return this.getNodesByLocations([
+            new Vector2(currentX, currentY - 1),
+            new Vector2(currentX + 1, currentY - 1),
+            new Vector2(currentX, currentY),
+            new Vector2(currentX + 1, currentY)]);
+        } else {
+          return this.getNodesByLocations([
+            new Vector2(currentX, currentY - 1),
+            new Vector2(currentX, currentY),
+            new Vector2(currentX + 1, currentY)]);
+        }
       } else {
         // Left-most node somewhere in between top and bottom of the grid
         // 0 0
         // X 0
         // 0 0
-        return this.getNodesByLocations([
-          new Vector2(currentX, currentY - 1),
-          new Vector2(currentX + 1, currentY - 1),
-          new Vector2(currentX, currentY),
-          new Vector2(currentX + 1, currentY),
-          new Vector2(currentX, currentY + 1),
-          new Vector2(currentX + 1, currentY + 1)]);
+        if (allowDiagonalMovement) {
+          return this.getNodesByLocations([
+            new Vector2(currentX, currentY - 1),
+            new Vector2(currentX + 1, currentY - 1),
+            new Vector2(currentX, currentY),
+            new Vector2(currentX + 1, currentY),
+            new Vector2(currentX, currentY + 1),
+            new Vector2(currentX + 1, currentY + 1)]);
+        } else {
+          return this.getNodesByLocations([
+            new Vector2(currentX, currentY - 1),
+            new Vector2(currentX, currentY),
+            new Vector2(currentX + 1, currentY),
+            new Vector2(currentX, currentY + 1)]);
+        }
       }
     } else if (currentNode.location.x === this.gridViewModel.size - 1) {
       // Right-most and top-most node
       // 0 X
       // 0 0
       if (currentNode.location.y === 0) {
-        return this.getNodesByLocations([
-          new Vector2(currentX - 1, currentY),
-          new Vector2(currentX, currentY),
-          new Vector2(currentX - 1, currentY + 1),
-          new Vector2(currentX, currentY + 1)]);
+        if (allowDiagonalMovement) {
+          return this.getNodesByLocations([
+            new Vector2(currentX - 1, currentY),
+            new Vector2(currentX, currentY),
+            new Vector2(currentX - 1, currentY + 1),
+            new Vector2(currentX, currentY + 1)]);
+        } else {
+          return this.getNodesByLocations([
+            new Vector2(currentX - 1, currentY),
+            new Vector2(currentX, currentY),
+            new Vector2(currentX, currentY + 1)]);
+        }
       } else if (currentNode.location.y === this.gridViewModel.size - 1) {
         // Right-most and bottom-most node
         // 0 0
         // 0 X
-        return this.getNodesByLocations([
-          new Vector2(currentX - 1, currentY - 1),
-          new Vector2(currentX, currentY - 1),
-          new Vector2(currentX - 1, currentY),
-          new Vector2(currentX, currentY)]);
+        if (allowDiagonalMovement) {
+          return this.getNodesByLocations([
+            new Vector2(currentX - 1, currentY - 1),
+            new Vector2(currentX, currentY - 1),
+            new Vector2(currentX - 1, currentY),
+            new Vector2(currentX, currentY)]);
+        } else {
+          return this.getNodesByLocations([
+            new Vector2(currentX, currentY - 1),
+            new Vector2(currentX - 1, currentY),
+            new Vector2(currentX, currentY)]);
+        }
       } else {
         // Right-most node somewhere in between top and bottom of the grid
         // 0 0
         // 0 X
         // 0 0
-        return this.getNodesByLocations([
-          new Vector2(currentX - 1, currentY - 1),
-          new Vector2(currentX, currentY - 1),
-          new Vector2(currentX - 1, currentY),
-          new Vector2(currentX, currentY),
-          new Vector2(currentX - 1, currentY + 1),
-          new Vector2(currentX, currentY + 1)]);
+        if (allowDiagonalMovement) {
+          return this.getNodesByLocations([
+            new Vector2(currentX - 1, currentY - 1),
+            new Vector2(currentX, currentY - 1),
+            new Vector2(currentX - 1, currentY),
+            new Vector2(currentX, currentY),
+            new Vector2(currentX - 1, currentY + 1),
+            new Vector2(currentX, currentY + 1)]);
+        } else {
+          return this.getNodesByLocations([
+            new Vector2(currentX, currentY - 1),
+            new Vector2(currentX - 1, currentY),
+            new Vector2(currentX, currentY),
+            new Vector2(currentX, currentY + 1)]);
+        }
       }
     } else {
       // Node somewhere in the middle (horizontally) and top-most node
       // 0 X 0
       // 0 0 0
       if (currentNode.location.y === 0) {
-        return this.getNodesByLocations([
-          new Vector2(currentX - 1, currentY),
-          new Vector2(currentX, currentY),
-          new Vector2(currentX + 1, currentY),
-          new Vector2(currentX - 1, currentY + 1),
-          new Vector2(currentX, currentY + 1),
-          new Vector2(currentX + 1, currentY + 1)]);
+        if (allowDiagonalMovement) {
+          return this.getNodesByLocations([
+            new Vector2(currentX - 1, currentY),
+            new Vector2(currentX, currentY),
+            new Vector2(currentX + 1, currentY),
+            new Vector2(currentX - 1, currentY + 1),
+            new Vector2(currentX, currentY + 1),
+            new Vector2(currentX + 1, currentY + 1)]);
+        } else {
+          return this.getNodesByLocations([
+            new Vector2(currentX - 1, currentY),
+            new Vector2(currentX, currentY),
+            new Vector2(currentX + 1, currentY),
+            new Vector2(currentX, currentY + 1)]);
+        }
       } else if (currentNode.location.y === this.gridViewModel.size - 1) {
         // Node somewhere in the middle (horizontally) and bottom-most node
         // 0 0 0
         // 0 X 0
-        return this.getNodesByLocations([
-          new Vector2(currentX - 1, currentY - 1),
-          new Vector2(currentX, currentY - 1),
-          new Vector2(currentX + 1, currentY - 1),
-          new Vector2(currentX - 1, currentY),
-          new Vector2(currentX, currentY),
-          new Vector2(currentX + 1, currentY)]);
+        if (allowDiagonalMovement) {
+          return this.getNodesByLocations([
+            new Vector2(currentX - 1, currentY - 1),
+            new Vector2(currentX, currentY - 1),
+            new Vector2(currentX + 1, currentY - 1),
+            new Vector2(currentX - 1, currentY),
+            new Vector2(currentX, currentY),
+            new Vector2(currentX + 1, currentY)]);
+        } else {
+          return this.getNodesByLocations([
+            new Vector2(currentX, currentY - 1),
+            new Vector2(currentX - 1, currentY),
+            new Vector2(currentX, currentY),
+            new Vector2(currentX + 1, currentY)]);
+        }
       } else {
         // Node somewhere in the middle (horizontally) and somewhere in between top and bottom of the grid
         // 0 0 0
         // 0 X 0
         // 0 0 0
-        return this.getNodesByLocations([
-          new Vector2(currentX - 1, currentY - 1),
-          new Vector2(currentX, currentY - 1),
-          new Vector2(currentX + 1, currentY - 1),
-          new Vector2(currentX - 1, currentY),
-          new Vector2(currentX, currentY),
-          new Vector2(currentX + 1, currentY),
-          new Vector2(currentX - 1, currentY + 1),
-          new Vector2(currentX, currentY + 1),
-          new Vector2(currentX + 1, currentY + 1)]);
+        if (allowDiagonalMovement) {
+          return this.getNodesByLocations([
+            new Vector2(currentX - 1, currentY - 1),
+            new Vector2(currentX, currentY - 1),
+            new Vector2(currentX + 1, currentY - 1),
+            new Vector2(currentX - 1, currentY),
+            new Vector2(currentX, currentY),
+            new Vector2(currentX + 1, currentY),
+            new Vector2(currentX - 1, currentY + 1),
+            new Vector2(currentX, currentY + 1),
+            new Vector2(currentX + 1, currentY + 1)]);
+        } else {
+          return this.getNodesByLocations([
+            new Vector2(currentX, currentY - 1),
+            new Vector2(currentX - 1, currentY),
+            new Vector2(currentX, currentY),
+            new Vector2(currentX + 1, currentY),
+            new Vector2(currentX, currentY + 1)]);
+        }
       }
     }
   }
 
   /**Gets a collection of nodes by their locations */
-  getNodesByLocations(locations: Vector2[]): CellViewModel[] {
+  private getNodesByLocations(locations: Vector2[]): CellViewModel[] {
     const nodes: CellViewModel[] = [];
     locations.forEach(location => nodes.push(this.cellViewModels[location.x][location.y]));
     return nodes;

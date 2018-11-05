@@ -1,6 +1,16 @@
 <div>
+  <label>Allow diagonal movement:</label>
+  <input 
+    type="checkbox" 
+    [ngModel]="allowDiagonalMovement"
+    (ngModelChange)="setAllowDiagonalMovement($event)">
+</div>
+<div>
   <button (click)="findPath()">Find Path!</button>
 </div>
 <div>
-  <button (click)="reset()">Reset</button>
+  <button (click)="reset()">Reset Grid</button>
+</div>
+<div>
+  <button (click)="clear()">Clear Path</button>
 </div>
