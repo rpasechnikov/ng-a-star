@@ -21,8 +21,8 @@ export class AStarService {
   private gridVm: GridViewModel;
   private cellVms: CellViewModel[][] = [];
 
-  private startingNode: CellViewModel;
-  private targetNode: CellViewModel;
+  private _startingNode: CellViewModel;
+  private _targetNode: CellViewModel;
 
   private allowDiagonalMovement = true;
 
@@ -38,7 +38,53 @@ export class AStarService {
     return this.cellVms;
   }
 
-  initializeGrid(size: number): void {
+  get startingNode(): CellViewModel {
+    return this._startingNode;
+  }
+
+  get targetNode(): CellViewModel {
+    return this._targetNode;
+  }
+
+  getCellViewModel(x: number, y: number): CellViewModel {
+    return this.getCellViewModelForLocation(new Vector2(x, y));
+  }
+
+  /**Returns the cell VM by location specified
+   * @returns valid cell VM or null if invalid location/not yet set-up grid
+   */
+  getCellViewModelForLocation(location: Vector2): CellViewModel {
+    // If null/undefined location or not yet setup grid
+    if (!location || !this.gridVm || !this.cellVms) {
+      return null;
+    }
+
+    // X out of bounds
+    if (!location.x || location.x < 0 || location.x > this.gridVm.size - 1) {
+      return null;
+    }
+
+    // Y out of bounds
+    if (!location.y || location.y < 0 || location.y > this.gridVm.size - 1) {
+      return null;
+    }
+
+    return this.cellVms[location.x][location.y];
+  }
+
+  /**Initializes the grid to the size specified
+   * @param size the size of grid to initialize (size x size nodes)
+   * @returns true if initialized correctly, false if:
+   * * size is null or undefined
+   * * size is less than 2
+   */
+  initializeGrid(size: number): boolean {
+    // Cannot initialize the grid without a valid, positive size larger than 2
+    // (e.g. It has to be at least a 2x2 grid)
+    if (!size || size < 2) {
+      return false;
+    }
+
     this.gridVm = new GridViewModel(size);
 
     for (let x = 0; x < this.gridVm.size; x++) {
@@ -48,20 +94,34 @@ export class AStarService {
         this.cellVms[x][y] = new CellViewModel(new Vector2(x, y));
       }
     }
+
+    return true;
   }
 
-  /**Sets the starting node unless it has already been set */
-  setStartingNode(startingNode: CellViewModel): void {
-    if (!this.startingNode) {
-      this.startingNode = startingNode;
+  /**Sets the starting node unless it has already been set
+   * @param startingNode node to set as starting
+   * @returns true if set successfully, false otherwise
+   */
+  setStartingNode(startingNode: CellViewModel): boolean {
+    if (!this._startingNode) {
+      this._startingNode = startingNode;
+      return true;
     }
+
+    return false;
   }
 
-  /**Sets the target node unless it has already been set */
-  setTargetNode(targetNode: CellViewModel): void {
-    if (!this.targetNode) {
-      this.targetNode = targetNode;
+  /**Sets the target node unless it has already been set
+   * @param targetNode node to set as starting
+   * @returns true if set successfully, false otherwise
+   */
+  setTargetNode(targetNode: CellViewModel): boolean {
+    if (!this._targetNode) {
+      this._targetNode = targetNode;
+      return true;
     }
+
+    return false
   }
 
   /**Resets the grid to its starting state */
@@ -72,8 +132,8 @@ export class AStarService {
       }
     }
 
-    this.startingNode = null;
-    this.targetNode = null;
+    this._startingNode = null;
+    this._targetNode = null;
   }
 
   clear(): void {
@@ -91,13 +151,20 @@ export class AStarService {
     this.allowDiagonalMovement = value;
   }
 
-  /**Finds the shortest path between the starting node and target node using the A* algorithm */
-  findPath(): void {
+  /**Finds the shortest path between the starting node and target node using the A* algorithm
+   * @returns true if path from starting node to target node found, false otherwise
+   */
+  findPath(): boolean {
+    // Ensure that grid and cell VMs are initialized
+    if (!this.gridVm || !this.cellViewModels) {
+      return false;
+    }
+
     this.clear();
 
-    if (!this.startingNode || !this.targetNode) {
+    if (!this._startingNode || !this._targetNode) {
       console.log('Unable to find the shortest path unless both starting and target nodes have been defined');
-      return;
+      return false;
     }
 
     // List of nodes which we can move to next, picking the node with lowest cost
@@ -109,10 +176,10 @@ export class AStarService {
     // Tracks the cost to get to a specific node from the start
     const costSoFar = new HashMap<CellViewModel, number>();
 
-    frontier.enqueue(this.startingNode, 0);
-    cameFrom.add(this.startingNode, this.startingNode);
-    costSoFar.add(this.startingNode, 0);
-    this.visitedNodes.push(this.startingNode);
+    frontier.enqueue(this._startingNode, 0);
+    cameFrom.add(this._startingNode, this._startingNode);
+    costSoFar.add(this._startingNode, 0);
+    this.visitedNodes.push(this._startingNode);
 
     // Repeat the following
     while (!frontier.empty) {
@@ -121,8 +188,8 @@ export class AStarService {
       const currentNode = frontier.pop();
       console.log(`Popped: ${currentNode.location.toString()}`);
 
-      if (currentNode === this.targetNode) {
-        return;
+      if (currentNode === this._targetNode) {
+        return true;
       }
 
       if (currentNode.state !== CellState.Start) {
@@ -145,7 +212,7 @@ export class AStarService {
         if (!costSoFar.get(adjacentNode) || movementCost < costSoFar.get(adjacentNode)) {
           costSoFar.add(adjacentNode, movementCost);
 
-          const priority = movementCost + this.getHeuristic(adjacentNode, this.targetNode);
+          const priority = movementCost + this.getHeuristic(adjacentNode, this._targetNode);
 
           frontier.enqueue(adjacentNode, priority);
           this.visitedNodes.push(adjacentNode);
@@ -153,6 +220,8 @@ export class AStarService {
         }
       });
     }
+
+    return false;
   }
 
   /**Gets the approximage distance between the two nodes as difference in X^2 plus difference in Y^2 added together */
