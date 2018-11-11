@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AStarService } from 'src/app/services/a-star.service';
+import { CellState } from 'src/app/enums/cell-state';
 
 @Component({
   selector: 'app-control-panel',
@@ -30,5 +31,21 @@ export class ControlPanelComponent implements OnInit {
 
   clear(): void {
     this.aStarService.clear();
+  }
+
+  setForestBrush(): void {
+    this.aStarService.setCurrentBrush(CellState.Forest);
+  }
+
+  setRiverBrush(): void {
+    this.aStarService.setCurrentBrush(CellState.Obstacle);
+  }
+
+  setRoadBrush(): void {
+    this.aStarService.setCurrentBrush(CellState.Road);
+  }
+
+  setGrassBrush(): void {
+    this.aStarService.setCurrentBrush(CellState.Empty);
   }
 }

@@ -24,6 +24,7 @@ export class AStarService {
 
   private _startingNode: CellViewModel;
   private _targetNode: CellViewModel;
+  private _currentBrush = CellState.Empty;
 
   private allowDiagonalMovement = true;
 
@@ -45,6 +46,10 @@ export class AStarService {
 
   get targetNode(): CellViewModel {
     return this._targetNode;
+  }
+
+  get currentBrush(): CellState {
+    return this._currentBrush;
   }
 
   getCellViewModel(x: number, y: number): CellViewModel {
@@ -105,6 +110,7 @@ export class AStarService {
    */
   setStartingNode(startingNode: CellViewModel): boolean {
     if (!this._startingNode) {
+      startingNode.setState(CellState.Start);
       this._startingNode = startingNode;
       return true;
     }
@@ -118,6 +124,7 @@ export class AStarService {
    */
   setTargetNode(targetNode: CellViewModel): boolean {
     if (!this._targetNode) {
+      targetNode.setState(CellState.End);
       this._targetNode = targetNode;
       return true;
     }
@@ -125,11 +132,26 @@ export class AStarService {
     return false;
   }
 
+  setCurrentBrush(brush: CellState): void {
+    this._currentBrush = brush;
+  }
+
+  /**Draws the current brush on target cell */
+  drawCurrentBrushOnCell(node: CellViewModel): void {
+    if (!node) {
+      return;
+    }
+
+    node.setState(this.currentBrush);
+  }
+
+
   /**Resets the grid to its starting state */
   reset(): void {
     for (let x = 0; x < this.gridVm.size; x++) {
       for (let y = 0; y < this.gridVm.size; y++) {
         this.cellVms[x][y].setState(CellState.Empty);
+        this.cellVms[x][y].setPathState(CellState.Empty);
       }
     }
 
@@ -140,9 +162,7 @@ export class AStarService {
   clear(): void {
     // let's clean up old results first
     this.visitedNodes.forEach(node => {
-      if (node.state === CellState.ConfirmedPath) {
-        node.setState(CellState.Empty);
-      }
+      node.setPathState(CellState.Empty);
     });
 
     this.visitedNodes = [];
@@ -155,7 +175,7 @@ export class AStarService {
   /**Finds the shortest path between the starting node and target node using the A* algorithm
    * @returns true if path from starting node to target node found, false otherwise
    */
-  findPath(): boolean {
+  findPath(displayVisitedNodes: boolean = true): boolean {
     // Ensure that grid and cell VMs are initialized
     if (!this.gridVm || !this.cellViewModels) {
       return false;
@@ -195,10 +215,11 @@ export class AStarService {
 
         // Highlight taken path
         while (currentPathNode) {
-          if (currentPathNode === cameFrom.get(currentPathNode)){
+          if (currentPathNode === cameFrom.get(currentPathNode)) {
             currentPathNode = null;
           } else {
-            currentPathNode.setState(CellState.ConfirmedPath);
+            // currentPathNode.setState(CellState.ConfirmedPath);
+            currentPathNode.setPathState(CellState.ConfirmedPath);
             currentPathNode = cameFrom.get(currentPathNode);
           }
         }
@@ -206,8 +227,8 @@ export class AStarService {
         return true;
       }
 
-      if (currentNode.state !== CellState.Start) {
-        currentNode.setState(CellState.PossiblePath);
+      if (displayVisitedNodes && currentNode.state !== CellState.Start) {
+        currentNode.setPathState(CellState.PossiblePath);
       }
 
       // 3-8 nodes
@@ -222,12 +243,13 @@ export class AStarService {
         }
 
         // TODO: can add movement cost based on environment (e.g. forest, mountaints, etc)
-        const movementCost = costSoFar.get(currentNode) + 1;
+        const movementCost = this.getNodeMovementCost(adjacentNode);
+        const movementCostSoFar = costSoFar.get(currentNode) + movementCost;
 
-        if (!costSoFar.get(adjacentNode) || movementCost < costSoFar.get(adjacentNode)) {
-          costSoFar.add(adjacentNode, movementCost);
+        if (!costSoFar.get(adjacentNode) || movementCostSoFar < costSoFar.get(adjacentNode)) {
+          costSoFar.add(adjacentNode, movementCostSoFar);
 
-          const priority = movementCost + this.getHeuristic(adjacentNode, this._targetNode);
+          const priority = movementCostSoFar + this.getHeuristic(adjacentNode, this._targetNode, movementCost);
 
           frontier.enqueue(adjacentNode, priority);
           this.visitedNodes.push(adjacentNode);
@@ -239,17 +261,34 @@ export class AStarService {
     return false;
   }
 
+  private getNodeMovementCost(node: CellViewModel): number {
+    // Fail-safe
+    if (!node) {
+      return 1;
+    }
+
+    if (node.state === CellState.Empty) {
+      return 3;
+    } else if (node.state === CellState.Forest) {
+      return 8;
+    } else {
+      // Road
+      return 1;
+    }
+  }
+
   /**Gets the approximage distance between the two nodes as difference in X^2 plus difference in Y^2 added together.
    * This allows us to *estimate* the distance between two points on the grid, not taking into account any obstacles.
    * @param startNode snot to get distance from
    * @param targetNode node to get distance to
+   * @param movementCost cost to move to from start node
    * @returns the heuristic representing the estimated distance between two nodes
    */
-  private getHeuristic(startNode: CellViewModel, targetNode: CellViewModel): number {
+  private getHeuristic(startNode: CellViewModel, targetNode: CellViewModel, movementCost: number): number {
     const x = Math.abs(startNode.location.x - targetNode.location.x);
     const y = Math.abs(startNode.location.y - targetNode.location.y);
 
-    return Math.pow(x, 2) + Math.pow(y, 2);
+    return Math.pow(x, 2) + Math.pow(y, 2) + Math.pow(movementCost, 2);
   }
 
   /**Gets 8 or 4 adjacent nodes, depending on whether diagonal movement is allowed

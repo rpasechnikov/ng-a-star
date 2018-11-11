@@ -116,6 +116,8 @@ describe('AStarService', () => {
 
   it('should set the starting node correctly', () => {
     const service: AStarService = TestBed.get(AStarService);
+
+    // TODO: move into nested describe with before each setting up grid for all relevant tests
     service.initializeGrid(5);
     service.setStartingNode(service.getCellViewModel(0,0));
     expect(service.startingNode).toEqual(service.getCellViewModel(0,0));

@@ -3,8 +3,11 @@ import { Vector2 } from './vector2';
 import { IHashable } from '../interfaces/ihashable';
 
 export class CellViewModel implements IHashable {
-    /**Node state */
+    /**Node state - grass, forest, river, road, etc */
     state: CellState;
+
+    /**Whether not considered, possible path or confirmed path */
+    pathState: CellState;
 
     /**Node colour - based on state */
     colour: string;
@@ -33,6 +36,14 @@ export class CellViewModel implements IHashable {
      */
     h: number;
 
+    get stateDescription(): string {
+        return CellState[this.state];
+    }
+
+    get pathStateDescription(): string {
+        return CellState[this.pathState];
+    }
+
     constructor(location: Vector2, state: CellState = CellState.Empty) {
         this.state = state;
         this.location = location;
@@ -46,6 +57,10 @@ export class CellViewModel implements IHashable {
     setNextState(): CellState {
         this.setState(this.getNextState(this.state, true));
         return this.state;
+    }
+
+    setPathState(state: CellState): void {
+        this.pathState = state;
     }
 
     /**Update colour and VM cell state

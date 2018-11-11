@@ -16,6 +16,12 @@ export class GridComponent implements OnInit {
   constructor(private aStarService: AStarService) { }
 
   ngOnInit() {
+    this.init();
+  }
+
+  private init() {
+    console.log('console');
+
     this.cellVms = this.aStarService.cellViewModels;
   }
 }

@@ -1,3 +1,41 @@
+@import '../../../styles.scss';
+
+@mixin hover($color){
+    &:hover {
+        background: lighten($color, 15%);
+        border: 2px solid rgb(31, 31, 31);
+    }
+}
+
 button {
     width: 120px;
+}
+
+.palette {
+    button {
+        background: none;
+        border: none;
+        height: 60px;
+        width: 60px;
+
+        &.forest {
+            background: $forest;
+            @include hover($forest);
+        }
+
+        &.river {
+            background: $river;
+            @include hover($river);
+        }
+
+        &.road {
+            background: $road;
+            @include hover($road);
+        }
+
+        &.grass {
+            background: $grass;
+            @include hover($grass);
+        }
+    }
 }

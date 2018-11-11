@@ -1,16 +1,26 @@
 <div>
-  <label>Allow diagonal movement:</label>
-  <input 
-    type="checkbox" 
-    [ngModel]="allowDiagonalMovement"
-    (ngModelChange)="setAllowDiagonalMovement($event)">
+  <h2>Actions</h2>
+  <div>
+    <label>Diagonal movement</label>
+    <input 
+      type="checkbox" 
+      [ngModel]="allowDiagonalMovement"
+      (ngModelChange)="setAllowDiagonalMovement($event)">
+  </div>
+  <div>
+    <button (click)="findPath()">Find Path!</button>
+  </div>
+  <div>
+    <button (click)="reset()">Reset Grid</button>
+  </div>
+  <div>
+    <button (click)="clear()">Clear Path</button>
+  </div>
 </div>
-<div>
-  <button (click)="findPath()">Find Path!</button>
-</div>
-<div>
-  <button (click)="reset()">Reset Grid</button>
-</div>
-<div>
-  <button (click)="clear()">Clear Path</button>
+<div class="palette">
+  <h2>Palette</h2>
+  <button class="forest" (click)="setForestBrush()">Forest</button>
+  <button class="river" (click)="setRiverBrush()">River</button>
+  <button class="road" (click)="setRoadBrush()">Road</button>
+  <button class="grass" (click)="setGrassBrush()">Grass</button>
 </div>

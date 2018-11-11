@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { GridViewModel } from './view-models/grid-view-model';
 import { AStarService } from './services/a-star.service';
 
 @Component({
@@ -11,6 +10,6 @@ export class AppComponent implements OnInit {
   constructor(private aStarService: AStarService) {}
 
   ngOnInit(): void {
-    this.aStarService.initializeGrid(50);
+    this.aStarService.initializeGrid(30);
   }
 }

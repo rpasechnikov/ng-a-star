@@ -1,4 +1,16 @@
-$grey: rgb(172, 178, 197);
+@import '../../../styles.scss';
+
+
+@mixin path($colour){
+    &.path-possiblepath {
+        background: darken($colour, 15%);
+    }
+
+    &.path-confirmedpath {
+        background: lighten($colour, 15%);
+        border-radius: 50%;
+    }
+}
 
 .cell {
     width: 20px;
@@ -6,27 +18,31 @@ $grey: rgb(172, 178, 197);
     border: 1px solid $grey;
     float: left;
 
-    &.transparent {
-        background: transparent;   
+    &.empty {
+        background: $grass;
+        @include path($grass);
     }
 
-    &.grey {
-        background: $grey;
+    &.obstacle {
+        background: $river;
+        @include path($river);
+    }
+    
+    &.forest {
+        background: $forest;
+        @include path($forest);
     }
 
-    &.yellow {
-        background: rgb(243, 243, 128);
+    &.road {
+        background: $road;
+        @include path($road);
     }
 
-    &.blue {
-        background: rgb(112, 175, 214);
+    &.start {
+        background: rgb(100, 23, 202);
     }
 
-    &.green {
-        background: rgb(93, 160, 93);
-    }
-
-    &.red {
-        background: rgb(221, 96, 96);
+    &.end {
+        background: rgb(177, 19, 19);
     }
 }

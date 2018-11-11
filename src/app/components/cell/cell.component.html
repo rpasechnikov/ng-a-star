@@ -1,1 +1,5 @@
-<div class="cell {{cellViewModel.colour}}" (click)="onClick($event)" (mouseover)="mouseOver($event)"></div>
+<div 
+    class="cell {{cellViewModel.stateDescription | lowercase}} path-{{cellViewModel.pathStateDescription | lowercase}}" 
+    (click)="onClick($event)" 
+    (mouseover)="mouseOver($event)">
+</div>

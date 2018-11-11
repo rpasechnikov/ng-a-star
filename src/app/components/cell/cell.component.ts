@@ -22,12 +22,13 @@ export class CellComponent implements OnInit {
 
   /**Toggles clickable cell state (empty, obstacle, start or target) */
   onClick(): void {
-    this.cellViewModel.setNextState();
 
-    if (this.cellViewModel.state === CellState.Start) {
+    if (!this.aStarService.startingNode) {
       this.aStarService.setStartingNode(this.cellViewModel);
-    } else if (this.cellViewModel.state === CellState.End) {
+    } else if (!this.aStarService.targetNode) {
       this.aStarService.setTargetNode(this.cellViewModel);
+    } else {
+      this.aStarService.drawCurrentBrushOnCell(this.cellViewModel);
     }
   }
 
@@ -37,11 +38,7 @@ export class CellComponent implements OnInit {
    */
   mouseOver($event: MouseEvent): void {
     if ($event.buttons === this.MOUSE_BUTTON_LEFT) {
-      if (this.cellViewModel.state === CellState.Empty) {
-        this.cellViewModel.setState(CellState.Obstacle);
-      } else {
-        this.cellViewModel.setState(CellState.Empty);
-      }
+      this.aStarService.drawCurrentBrushOnCell(this.cellViewModel);
     }
   }
 }
