@@ -122,7 +122,7 @@ export class AStarService {
       return true;
     }
 
-    return false
+    return false;
   }
 
   /**Resets the grid to its starting state */
@@ -189,18 +189,32 @@ export class AStarService {
       const currentNode = frontier.pop();
       console.log(`Popped: ${currentNode.location.toString()}`);
 
+      // Finished!
       if (currentNode === this._targetNode) {
+        let currentPathNode = cameFrom.get(currentNode);
+
+        // Highlight taken path
+        while (currentPathNode) {
+          if (currentPathNode === cameFrom.get(currentPathNode)){
+            currentPathNode = null;
+          } else {
+            currentPathNode.setState(CellState.ConfirmedPath);
+            currentPathNode = cameFrom.get(currentPathNode);
+          }
+        }
+
         return true;
       }
 
       if (currentNode.state !== CellState.Start) {
-        currentNode.setState(CellState.ConfirmedPath);
+        currentNode.setState(CellState.PossiblePath);
       }
 
-      const adjacentEightNodes = this.getAdjacentNodes(currentNode, this.allowDiagonalMovement);
+      // 3-8 nodes
+      const adjacentNodes = this.getAdjacentNodes(currentNode, this.allowDiagonalMovement);
 
       // For each of the 8 squares adjacent to this current square
-      adjacentEightNodes.forEach(adjacentNode => {
+      adjacentNodes.forEach(adjacentNode => {
 
         // Cannot walk through walls
         if (adjacentNode.state === CellState.Obstacle) {
@@ -428,11 +442,11 @@ export class AStarService {
     }
   }
 
-  private getAdjacentNodeLocationsForDirection(
-    direction: Direction,
-    allowDiagonalMovement: boolean): Vector2[] {
-    // ??
-  }
+  // private getAdjacentNodeLocationsForDirection(
+  //   direction: Direction,
+  //   allowDiagonalMovement: boolean): Vector2[] {
+  //   // ??
+  // }
 
   /**Gets a collection of nodes by their locations */
   private getNodesByLocations(locations: Vector2[]): CellViewModel[] {

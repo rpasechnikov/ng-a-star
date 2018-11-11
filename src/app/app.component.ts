@@ -11,6 +11,6 @@ export class AppComponent implements OnInit {
   constructor(private aStarService: AStarService) {}
 
   ngOnInit(): void {
-    this.aStarService.initializeGrid(20);
+    this.aStarService.initializeGrid(50);
   }
 }
