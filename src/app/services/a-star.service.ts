@@ -6,6 +6,7 @@ import { CellState } from '../enums/cell-state';
 import { Vector2 } from '../view-models/vector2';
 import { PriorityQueue } from '../data-structures/priority-queue';
 import { HashMap } from '../data-structures/hash-map';
+import { Direction } from '../enums/direction';
 
 /**A* implementation based on: https://www.redblobgames.com/pathfinding/a-star/introduction.html
  * Grid coordinates are in (x, y) format as follows:
@@ -196,7 +197,7 @@ export class AStarService {
         currentNode.setState(CellState.ConfirmedPath);
       }
 
-      const adjacentEightNodes = this.getAdjacentEightNodes(currentNode, this.allowDiagonalMovement);
+      const adjacentEightNodes = this.getAdjacentNodes(currentNode, this.allowDiagonalMovement);
 
       // For each of the 8 squares adjacent to this current square
       adjacentEightNodes.forEach(adjacentNode => {
@@ -224,22 +225,31 @@ export class AStarService {
     return false;
   }
 
-  /**Gets the approximage distance between the two nodes as difference in X^2 plus difference in Y^2 added together */
-  private getHeuristic(startNode: CellViewModel, targetNode: CellViewModel) {
+  /**Gets the approximage distance between the two nodes as difference in X^2 plus difference in Y^2 added together.
+   * This allows us to *estimate* the distance between two points on the grid, not taking into account any obstacles.
+   * @param startNode snot to get distance from
+   * @param targetNode node to get distance to
+   * @returns the heuristic representing the estimated distance between two nodes
+   */
+  private getHeuristic(startNode: CellViewModel, targetNode: CellViewModel): number {
     const x = Math.abs(startNode.location.x - targetNode.location.x);
     const y = Math.abs(startNode.location.y - targetNode.location.y);
 
     return Math.pow(x, 2) + Math.pow(y, 2);
   }
 
-  /**Gets adjacent 8 nodes
+  /**Gets 8 or 4 adjacent nodes, depending on whether diagonal movement is allowed
    * X represents current node
    * 0 represents adjacent nodes
    *
    * Number of adjacent nodes can be as little as 3 and as large as 8,
    * depending on current node location
+   * @param currentNode node to get adjacent nodes for
+   * @param allowDiagonalMovement whether diagonal movement is allowed or not
+   * @returns collection of adjacent nodes - from 3 to 8, depending on currentNode location
+   * and allowDiagonalMovement setting
    */
-  private getAdjacentEightNodes(currentNode: CellViewModel, allowDiagonalMovement: boolean): CellViewModel[] {
+  private getAdjacentNodes(currentNode: CellViewModel, allowDiagonalMovement: boolean): CellViewModel[] {
     const currentX = currentNode.location.x;
     const currentY = currentNode.location.y;
 
@@ -416,6 +426,12 @@ export class AStarService {
         }
       }
     }
+  }
+
+  private getAdjacentNodeLocationsForDirection(
+    direction: Direction,
+    allowDiagonalMovement: boolean): Vector2[] {
+    // ??
   }
 
   /**Gets a collection of nodes by their locations */
