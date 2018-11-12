@@ -19,8 +19,8 @@
 </div>
 <div class="palette">
   <h2>Palette</h2>
-  <button class="forest" (click)="setForestBrush()">Forest</button>
-  <button class="river" (click)="setRiverBrush()">River</button>
-  <button class="road" (click)="setRoadBrush()">Road</button>
-  <button class="grass" (click)="setGrassBrush()">Grass</button>
+  <button class="forest" [ngClass]="{'active': isForestBrushActive}" (click)="setForestBrush()">Forest</button>
+  <button class="river" [ngClass]="{'active': isRiverBrushActive}" (click)="setRiverBrush()">River</button>
+  <button class="road" [ngClass]="{'active': isRoadBrushActive}" (click)="setRoadBrush()">Road</button>
+  <button class="grass" [ngClass]="{'active': isGrassBrushActive}" (click)="setGrassBrush()">Grass</button>
 </div>

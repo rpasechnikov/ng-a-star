@@ -1,48 +1,40 @@
 @import '../../../styles.scss';
 
-
-@mixin path($colour){
-    &.path-possiblepath {
-        background: darken($colour, 15%);
-    }
-
-    &.path-confirmedpath {
-        background: lighten($colour, 15%);
-        border-radius: 50%;
-    }
-}
-
 .cell {
     width: 20px;
     height: 20px;
-    border: 1px solid $grey;
-    float: left;
+    // border: 1px solid $grey;
+    // float: left;
 
     &.empty {
-        background: $grass;
-        @include path($grass);
+        background-image: url('../../../assets/grass-tile.png');
     }
 
     &.obstacle {
-        background: $river;
-        @include path($river);
+        background-image: url('../../../assets/water-tile.png');
     }
     
     &.forest {
-        background: $forest;
-        @include path($forest);
+        background-image: url('../../../assets/forest-tile.png');
     }
 
     &.road {
-        background: $road;
-        @include path($road);
+        background-image: url('../../../assets/road-tile.png');
     }
 
     &.start {
-        background: rgb(100, 23, 202);
+        background-image: url('../../../assets/start-tile.png');
     }
 
     &.end {
-        background: rgb(177, 19, 19);
+        background-image: url('../../../assets/finish-tile.png');
+    }
+
+    &.path-possiblepath {
+        background-image: url('../../../assets/possible-path-tile.png');
+    }
+
+    &.path-confirmedpath {
+        background-image: url('../../../assets/path-tile.png');
     }
 }

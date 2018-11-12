@@ -3,7 +3,11 @@
 @mixin hover($color){
     &:hover {
         background: lighten($color, 15%);
-        border: 2px solid rgb(31, 31, 31);
+        border: 1px solid rgb(70, 70, 70);
+    }
+
+    &.active {
+        border: 1px solid rgb(70, 70, 70);
     }
 }
 

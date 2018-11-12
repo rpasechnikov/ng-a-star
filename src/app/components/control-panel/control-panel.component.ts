@@ -13,6 +13,22 @@ export class ControlPanelComponent implements OnInit {
 
   allowDiagonalMovement = true;
 
+  get isForestBrushActive(): boolean {
+    return this.aStarService.currentBrush === CellState.Forest;
+  }
+
+  get isRiverBrushActive(): boolean {
+    return this.aStarService.currentBrush === CellState.Obstacle;
+  }
+
+  get isRoadBrushActive(): boolean {
+    return this.aStarService.currentBrush === CellState.Road;
+  }
+
+  get isGrassBrushActive(): boolean {
+    return this.aStarService.currentBrush === CellState.Empty;
+  }
+
   setAllowDiagonalMovement(value: boolean) {
     this.allowDiagonalMovement = value;
     this.aStarService.setAllowDiagonalMovement(value);

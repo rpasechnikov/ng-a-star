@@ -1,5 +1,9 @@
 <div 
-    class="cell {{cellViewModel.stateDescription | lowercase}} path-{{cellViewModel.pathStateDescription | lowercase}}" 
+    class="cell {{cellViewModel.stateDescription | lowercase}}" 
     (click)="onClick($event)" 
     (mouseover)="mouseOver($event)">
+
+    <!-- Path markers -->
+    <div class="cell path-{{cellViewModel.pathStateDescription | lowercase}}">
+    </div>
 </div>
